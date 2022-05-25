@@ -1,0 +1,66 @@
+service: aws-node-http-api-project
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  region: us-west-2
+  environment:
+    'ROOKOUT_TOKEN': ${opt:ROOKOUT_TOKEN, 'df882711cbb621193f2bdde654a44fb9b5d827c16cf3c6b8ac0189da405ad3d8'}
+  iam:
+    role:
+      statements:
+      - Effect: Allow
+        Action: 
+          - dynamodb:*
+        Resource: arn:aws:dynamodb:us-west-2:852206858610:table/TodoTable
+
+functions:
+  addTodo:
+    handler: src/addTodo.handler
+    events:
+      - httpApi:
+          path: /
+          method: post
+  fetchTodos:
+    handler: src/fetchTodos.handler
+    events:
+      - httpApi:
+          path: /todos
+          method: get
+  fetchTodo:
+    handler: src/fetchTodo.handler
+    events:
+      - httpApi:
+          path: /todo/{id}
+          method: get
+  updateTodo:
+    handler: src/updateTodo.handler
+    events:
+      - httpApi:
+          path: /todo/{id}
+          method: put
+  fetchTodosCpy:
+    handler: src/fetchTodosCpy.handler
+    events:
+      - httpApi:
+          path: /todosCpy
+          method: get
+
+
+
+resources: 
+  Resources: 
+    TodoTable: 
+      Type: AWS::DynamoDB::Table 
+      Properties: 
+        TableName: TodoTable
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema: 
+          - AttributeName: id 
+            KeyType: HASH
+
+configValidationMode: error
